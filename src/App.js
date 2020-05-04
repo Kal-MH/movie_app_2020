@@ -1,48 +1,52 @@
 import React from "react";
-import PropTypes from "prop-types";
+import axios from "axios";
+import Movie from "./Movie";
+import "./App.css";
 
-function Food({ name, rating }) {
-  return (
-    <div>
-      <h3>
-        I like {name}, {rating}/5.0
-      </h3>
-    </div>
-  );
-}
+const URL = "https://yts-proxy.now.sh/list_movies.json?sort_by=rating";
 
-const foods = [
-  {
-    id: 1,
-    name: "kimchi",
-    rating: 4.0,
-  },
-  {
-    id: 2,
-    name: "goggi",
-    rating: 4.8,
-  },
-  {
-    id: 3,
-    name: "된장찌개",
-    rating: 5.0,
-  },
-];
-
-Food.propTypes = {
-  name: PropTypes.string.isRequired,
-  rating: PropTypes.number.isRequired,
-};
-
-function App() {
-  return (
-    <div className="App">
-      <h1>Hello!</h1>
-      {foods.map((dish) => (
-        <Food key={dish.id} name={dish.name} rating={dish.rating} />
-      ))}
-    </div>
-  );
+class App extends React.Component {
+  state = {
+    isLoading: true,
+    movies: [],
+  };
+  getMovies = async () => {
+    const {
+      data: {
+        data: { movies },
+      },
+    } = await axios(URL);
+    this.setState({ movies, isLoading: false });
+  };
+  componentDidMount() {
+    this.getMovies();
+  }
+  render() {
+    const { isLoading, movies } = this.state;
+    return (
+      <section className="container">
+        {isLoading ? (
+          <div className="loader">
+            <span>Loading...</span>
+          </div>
+        ) : (
+          <div className="movies">
+            {movies.map((movie) => (
+              <Movie
+                key={movie.id}
+                id={movie.id}
+                title={movie.title}
+                year={movie.year}
+                summary={movie.summary}
+                poster={movie.medium_cover_image}
+                genres={movie.genres}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+    );
+  }
 }
 
 export default App;
